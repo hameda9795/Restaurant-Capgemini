@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molveno Lake Resort Restaurant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'brush': ['Brush Script MT', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+
+</head>
+
+<body class="bg-gray-100  mx-auto ">
+<!-- Header -->
+<!--<header class="max-w-7xl mx-auto bg-gray-100 dark:bg-gray-500 shadow-md z-50 border-black">-->
+<!--    &lt;!&ndash; container &ndash;&gt;-->
+<!--    <div class="w-full max-auto px-4 sm:px-6 lg:px-8">-->
+<!--        &lt;!&ndash; flex &ndash;&gt;-->
+<!--        <div class="flex max-w-7xl justify-between items-center h-16 sm:h-20">-->
+<!--            &lt;!&ndash; Logo &ndash;&gt;-->
+<!--            <img th:src="@{/img/logo.svg}" alt="" class="h-16 w-auto">-->
+
+<!--            &lt;!&ndash; Middle Side &ndash;&gt;-->
+<!--            <div class=" md:flex flex-col items-center flex-grow">-->
+<!--                <h1 class="font-brush text-2xl md:text-4xl lg:text-4xl text-blue-400 text-center whitespace-nowrap">-->
+<!--                    Molveno Lake Resort Restaurant-->
+<!--                </h1>-->
+<!--                <nav class="space-x-8 hidden md:block">-->
+<!--                    <a th:href="@{/}" class="text-gray-600 hover:text-blue-500">Home</a>-->
+<!--                    <a th:href="@{/about}" class="text-gray-600 hover:text-blue-500">About</a>-->
+<!--                    <a th:href="@{/gallery}" class="text-gray-600 hover:text-blue-500">Gallery</a>-->
+<!--                </nav>-->
+<!--            </div>-->
+
+<!--            &lt;!&ndash; Right Side Items &ndash;&gt;-->
+<!--            <div class="flex justify-center space-x-4">-->
+<!--                &lt;!&ndash; Desktop Navigation: آیکون کاربر &ndash;&gt;-->
+<!--                <a th:href="@{/login}">-->
+<!--                    <i class="hidden md:flex fas fa-user cursor-pointer text-gray-700 dark:text-white text-3xl"></i>-->
+<!--                </a>-->
+
+<!--                &lt;!&ndash; Mobile Navigation: آیکون منو &ndash;&gt;-->
+<!--                <a th:href="@{/login}" id="menu-toggle" class="md:hidden text-gray-700 dark:text-white">-->
+<!--                    <i class="fas fa-bars text-xl" id="menu-icon"></i>-->
+<!--                </a>-->
+<!--            </div>-->
+
+<!--        </div>-->
+<!--    </div>-->
+<!--</header>-->
+
+<main class="max-w-7xl mx-auto pt-12 sm:pt-16">
+    <div class="container mx-auto ">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <a th:href="@{/menu/breakfast}"
+               class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                <img th:src="@{/img/Breakfast-org.png}" alt="Breakfast"
+                     class="w-full h-48 object-cover rounded-lg mb-4">
+                <h2 class="text-xl font-semibold">Breakfast</h2>
+                <p class="text-gray-600 mt-2">6:00 AM - 11:00 AM</p>
+            </a>
+            <a th:href="@{/menu/lunch}" class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                <img th:src="@{/img/Lunch-org.png}" alt="Lunch" class="w-full h-48 object-cover rounded-lg mb-4">
+                <h2 class="text-xl font-semibold">Lunch</h2>
+                <p class="text-gray-600 mt-2">11:00 AM - 5:00 PM</p>
+
+            </a>
+            <a th:href="@{/menu/dinner}"
+               class="bg-white p-6 rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+                <img th:src="@{/img/Dinner-org.png}" alt="Dinner"
+                     class="w-full h-48 object-cover rounded-lg mb-4">
+                <h2 class="text-xl font-semibold">Dinner</h2>
+                <p class="text-gray-600 mt-2">5:00 PM - 11:00 PM</p>
+            </a>
+        </div>
+    </div>
+</main>
+
+<!-- Menu mobile -->
+
+<div id="mobile-menu"
+     class="fixed  top-0  w-full h-full bg-white transform translate-x-full transition-transform duration-300 ">
+    <button id="menu-close" class="absolute top-4 right-4 text-2xl">
+        <i class="fas fa-times"></i>
+    </button>
+
+    <div class="flex flex-col  p-9 space-y-6 ">
+        <h2 class="font-semibold text-2xl">
+            My account
+        </h2>
+
+        <div class="flex flex-row justify-around gap-3 w-full">
+            <a class="flex border px-20 w-1/2 text-center  justify-center rounded-3xl py-2 bg-slate-100">Login</a>
+            <a class="flex border px-20 w-1/2 text-center rounded-3xl justify-center py-2 bg-slate-600 text-white">signup</a>
+        </div>
+
+        <hr class="w-full border-t ">
+    </div>
+
+    <nav class="flex flex-col space-y-9 px-9">
+        <a href="#" class="flex items-center gap-3">
+            <span class="fas fa-home"></span>
+            Home</a>
+        <a href="#" class="flex items-center gap-3">
+            <span class="fas fa-address-card"></span>
+            About
+        </a>
+
+        <a href="#" class="flex items-center gap-3">
+            <span class="fas fa-image"></span>
+            Galley
+        </a>
+
+        <hr class="w-full border-t mt-6">
+
+    </nav>
+
+</div>
+
+<footer class=" max-w-7xl mx-auto bg-gray-100 dark:bg-gray-500 shadow-md mt-44    ">
+    <div class="flex w-full mx-auto bottom-0 bg-slate-500 justify-center items-center h-20 ">
+        <p>
+            © 2024 Molveno Lake resort Restaurant. All rights reserved.
+        </p>
+    </div>
+
+</footer>
+
+
+<script>
+    const menuToggle = document.getElementById('menu-toggle');
+    const menuClose = document.getElementById('menu-close');
+    const mobileMenu = document.getElementById('mobile-menu');
+    const menuIcon = document.getElementById('menu-icon');
+    const body = document.body;
+
+    menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.remove('translate-x-full');
+        menuIcon.classList.remove('fa-bars');
+        menuIcon.classList.add('fa-times');
+        body.classList.add('overflow-hidden');
+    });
+
+    menuClose.addEventListener('click', () => {
+        mobileMenu.classList.add('translate-x-full');
+        menuIcon.classList.remove('fa-times');
+        menuIcon.classList.add('fa-bars');
+        body.classList.remove('overflow-hidden');
+    });
+</script>
+</body>
+
+</html>

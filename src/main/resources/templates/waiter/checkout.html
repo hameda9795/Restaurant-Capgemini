@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molveno Lake Resort Restaurant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'brush': ['Brush Script MT', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+
+<!-- Header -->
+<header class="max-w-7xl mx-auto bg-gray-100 dark:bg-gray-500 shadow-md z-50 border-black">
+    <!-- container -->
+    <div class="w-full max-auto px-4 sm:px-6 lg:px-8">
+        <!-- flex -->
+        <div class="flex max-w-7xl justify-between items-center h-16 sm:h-20">
+            <!-- Logo -->
+            <img th:src="@{/img/logo.svg}" alt="" class="h-16 w-auto">
+
+            <!-- Middle Side -->
+            <div class=" md:flex flex-col items-center flex-grow">
+                <h1 class="font-brush text-2xl md:text-4xl lg:text-4xl text-blue-400 text-center whitespace-nowrap">
+                    Molveno Lake Resort Restaurant
+                </h1>
+                <nav class="space-x-8 hidden md:block">
+                    <a th:href="@{/}" class="text-gray-600 hover:text-blue-500">Home</a>
+                    <a th:href="@{/about}" class="text-gray-600 hover:text-blue-500">About</a>
+                    <a th:href="@{/gallery}" class="text-gray-600 hover:text-blue-500">Gallery</a>
+                </nav>
+                </nav>
+            </div>
+
+            <!-- Right Side Items -->
+            <div class="flex justify-center space-x-4">
+                <i class="hidden md:flex fas fa-user cursor-pointer text-gray-700 dark:text-white text-3xl"></i>
+                <!-- Mobile Navigation -->
+                <button id="menu-toggle" class="md:hidden text-gray-700 dark:text-white">
+                    <i class="fas fa-bars text-xl" id="menu-icon"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="bg-white shadow-md max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 m-10">
+    <div class="flex justify-center items-center h-16">
+        <h1 class="text-xl text-blue-500 font-semibold">Checkout </h1>
+    </div>
+</div>
+
+<!-- Main Content -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Progress Steps -->
+    <div class="mb-12">
+        <div class="flex justify-center items-center space-x-4">
+            <div class="flex items-center">
+                <span class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center">1</span>
+                <span class="ml-2 text-blue-500 font-medium">Cart</span>
+            </div>
+            <div class="w-16 h-0.5 bg-blue-500"></div>
+            <div class="flex items-center">
+                <span class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center">2</span>
+                <span class="ml-2 text-blue-500 font-medium">Checkout</span>
+            </div>
+            <div class="w-16 h-0.5 bg-gray-300"></div>
+            <div class="flex items-center">
+                <span class="w-8 h-8 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center">3</span>
+                <span class="ml-2 text-gray-600">Confirmation</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Order Summary -->
+        <div class="glass-morphism rounded-2xl shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">Order Summary</h2>
+            <div class="space-y-4">
+                <div th:each="item : ${cartItems}"
+                     class="flex items-center justify-between py-4 border-b border-gray-100">
+                    <div class="flex items-center">
+                        <img th:src="@{/uploads/{filename}(filename=${item.food.image})}"
+                             th:alt="${item.food.name}"
+                             class="w-16 h-16 object-cover rounded-lg">
+                        <div class="ml-4">
+                            <h3 class="font-medium text-gray-800" th:text="${item.food.name}"></h3>
+                            <p class="text-sm text-gray-500">
+                                <span th:text="${item.quantity}"></span> x
+                                <span th:text="'¥ '+${#numbers.formatDecimal(item.food.price, 1, 2)}"></span>
+                            </p>
+                        </div>
+                    </div>
+                    <span class="font-semibold text-gray-800"
+                          th:text="'¥ '+${#numbers.formatDecimal(item.totalPrice, 1, 2)}"></span>
+                </div>
+            </div>
+            <div class="mt-6 pt-6 border-t border-gray-100">
+                <div class="flex justify-between items-center text-lg font-bold text-gray-800">
+                    <span>Total</span>
+                    <span th:text="'¥ '+${#numbers.formatDecimal(#aggregates.sum(cartItems.![totalPrice]), 1, 2)}"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Table Selection Form -->
+        <div class="glass-morphism rounded-2xl shadow-lg p-6">
+            <h2 class="text-xl font-semibold text-gray-800 mb-6">Table Selection</h2>
+            <form th:action="@{/orders/checkout}" method="post" class="space-y-6">
+                <div class="space-y-4">
+                    <!-- Table Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Table Number</label>
+                        <div class="relative">
+                            <input type="number"
+                                   name="tableNumber"
+                                   min="1"
+                                   max="23"
+                                   required
+                                   class="table-number-input block w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                                   placeholder="Enter table number (1-23)">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <i class="fas fa-chair text-gray-400"></i>
+                            </div>
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">Please select a table number between 1 and 23</p>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit"
+                            class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 transform hover:scale-[1.02] flex items-center justify-center">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        Complete Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Back to Cart -->
+    <div class="mt-8 text-center">
+        <a href="/cart" class="text-blue-500 hover:text-blue-600 inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Cart
+        </a>
+    </div>
+</main>
+
+<script>
+    // Validate table number input
+    document.querySelector('input[name="tableNumber"]').addEventListener('input', function(e) {
+        let value = parseInt(e.target.value);
+        if (value < 1) e.target.value = 1;
+        if (value > 23) e.target.value = 23;
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${user.id == null ? 'Add New Staff' : 'Edit Staff'} + ' - Molveno Restaurant'">Staff Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .input-focus {
+            transition: all 0.2s ease;
+        }
+
+        .input-focus:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-900 text-white">
+        <div class="p-6">
+            <div class="text-center mb-8">
+                <img th:src="@{/img/logo.svg}" alt="Logo" class="mx-auto h-12 mb-4">
+                <h1 class="text-lg font-semibold">Admin Dashboard</h1>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="/admin/dashboard"
+                   class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
+                    <i class="fas fa-home mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="/admin/staff"
+                   class="flex items-center px-4 py-3 bg-gray-800 text-white rounded-lg">
+                    <i class="fas fa-users mr-3"></i>
+                    Staff Management
+                </a>
+                <a href="/logout"
+                   class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors mt-8">
+                    <i class="fas fa-sign-out-alt mr-3"></i>
+                    Logout
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+        <div class="container mx-auto px-6 py-8">
+            <!-- Header -->
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800"
+                        th:text="${user.id == null ? 'Add New Staff Member' : 'Edit Staff Member'}">
+                        Staff Form
+                    </h2>
+                    <p class="text-gray-600 mt-1">Enter the staff member's information below</p>
+                </div>
+                <a href="/admin/staff"
+                   class="text-gray-500 hover:text-gray-700 transition-all">
+                    <i class="fas fa-times text-xl"></i>
+                </a>
+            </div>
+
+            <!-- Form Card -->
+            <div class="glass-card rounded-2xl shadow-lg p-8 max-w-2xl mx-auto">
+                <form th:action="${user.id == null ? '/admin/staff/add' : '/admin/staff/edit'}"
+                      method="post"
+                      th:object="${user}"
+                      class="space-y-6">
+
+                    <input type="hidden" th:field="*{id}" />
+
+                    <!-- Two Column Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- First Name -->
+                        <div class="space-y-2">
+                            <label for="firstName" class="block text-sm font-medium text-gray-700">First Name</label>
+                            <div class="relative">
+                                <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text"
+                                       th:field="*{firstName}"
+                                       required
+                                       class="pl-10 w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       placeholder="Enter first name">
+                            </div>
+                        </div>
+
+                        <!-- Last Name -->
+                        <div class="space-y-2">
+                            <label for="lastName" class="block text-sm font-medium text-gray-700">Last Name</label>
+                            <div class="relative">
+                                <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text"
+                                       th:field="*{lastName}"
+                                       required
+                                       class="pl-10 w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       placeholder="Enter last name">
+                            </div>
+                        </div>
+
+                        <!-- Username -->
+                        <div class="space-y-2">
+                            <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                            <div class="relative">
+                                <i class="fas fa-at absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text"
+                                       th:field="*{username}"
+                                       required
+                                       th:readonly="${user.id != null}"
+                                       class="pl-10 w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                       th:classappend="${user.id != null ? 'bg-gray-50' : ''}"
+                                       placeholder="Enter username">
+                            </div>
+                        </div>
+
+                        <!-- Role Selection -->
+                        <div class="space-y-2">
+                            <label for="role" class="block text-sm font-medium text-gray-700">Role</label>
+                            <div class="relative">
+                                <i class="fas fa-user-tag absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <select th:field="*{role}"
+                                        required
+                                        class="pl-10 w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select Role</option>
+                                    <option th:each="role : ${roles}"
+                                            th:value="${role}"
+                                            th:text="${role}"
+                                            th:unless="${role == T(com.example.Restaurant.model.Role).ADMIN}">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Password Section -->
+                    <div class="space-y-2">
+                        <label for="password" class="block text-sm font-medium text-gray-700">
+                            <span th:text="${user.id == null ? 'Password' : 'New Password (leave blank to keep current)'}">Password</span>
+                        </label>
+                        <div class="relative">
+                            <i class="fas fa-lock absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                            <input type="password"
+                                   th:field="*{password}"
+                                   th:required="${user.id == null}"
+                                   class="pl-10 w-full px-4 py-2.5 border border-gray-200 rounded-lg input-focus focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Enter password">
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex items-center justify-end space-x-4 pt-6">
+                        <a href="/admin/staff"
+                           class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                            Cancel
+                        </a>
+                        <button type="submit"
+                                class="px-6 py-2.5 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transform transition-all hover:-translate-y-0.5">
+                            <i class="fas fa-save mr-2"></i>
+                            <span th:text="${user.id == null ? 'Create Staff' : 'Update Staff'}">Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

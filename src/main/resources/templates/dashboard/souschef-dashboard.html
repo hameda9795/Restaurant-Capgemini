@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitchen Dashboard - Molveno Restaurant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .content-section {
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-900">
+<div class="flex h-screen">
+
+
+    <!-- Sidebar -->
+    <aside class="w-100 bg-blue-600 text-white transform -translate-x-full md:translate-x-0 fixed md:relative
+            h-full transition-transform duration-300 ease-in-out z-40" id="sidebar">
+        <div class="w-full  bg-blue-50" >
+            <div class="w-full text-center mb-8 bg-blue-50">
+                <img src="/img/logo.svg" alt="Logo" class="mx-auto h-20 mb-4">
+                <h1 class="text-lg font-semibold text-blue-900">Sous Chef Dashboard</h1>
+            </div>
+
+            <nav class="space-y-2">
+                <button onclick="showContent('dashboard')"
+                        class="nav-link flex items-center w-full px-4 py-3 text-blue-900 hover:bg-blue-400 rounded-lg transition-colors"
+                        data-target="dashboard">
+                    <i class="fas fa-home mr-3"></i>
+                    Dashboard
+                </button>
+
+                <button onclick="showContent('orders')"
+                        class="nav-link flex items-center w-full px-4 py-3 text-blue-900 hover:bg-blue-400 rounded-lg transition-colors"
+                        data-target="orders">
+                    <i class="fas fa-clipboard-list mr-3"></i>
+                    See Orders
+                </button>
+
+                <button onclick="showContent('threshold')"
+                        class="nav-link flex items-center w-full px-4 py-3 text-blue-900 hover:bg-blue-400 rounded-lg transition-colors"
+                        data-target="threshold">
+                    <i class="fas fa-exclamation-triangle mr-3"></i>
+                    Threshold
+                </button>
+
+
+                <button onclick="showContent('ingredients')"
+                        class="nav-link flex items-center w-full px-4 py-3 text-blue-900 hover:bg-blue-400 rounded-lg transition-colors"
+                        data-target="ingredients">
+                    <i class="fas fa-carrot mr-3"></i>
+                    Ingredients
+                </button>
+
+                <button onclick="showContent('recipe')"
+                        class="nav-link flex items-center w-full px-4 py-3 text-blue-900 hover:bg-blue-400 rounded-lg transition-colors"
+                        data-target="recipe-management">
+                    <i class="fas fa-carrot mr-3"></i>
+                    Recipe Management
+                </button>
+
+
+                <button onclick="showContent('meals')"
+                        class="nav-link flex items-center w-full px-4 py-3 text-blue-900 hover:bg-blue-400 rounded-lg transition-colors"
+                        data-target="meals">
+                    <i class="fas fa-utensils mr-3"></i>
+                    Meals Management
+                </button>
+
+                <a href="/logout"
+                   class="flex items-center w-full px-4 py-3 text-gray-100 hover:bg-gray-800 bg-gray-500 rounded-lg transition-colors mt-8">
+                    <i class="fas fa-sign-out-alt mr-3"></i>
+                    Logout
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <button id="sidebarToggle" class="md:hidden fixed top-4 left-4 z-50 bg-blue-500 text-white p-2 rounded-lg">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+        <!-- Dashboard Content Section -->
+        <div id="dashboard-content" class="content-section active container mx-auto px-6 py-8">
+            <div class="flex items-center justify-between mb-8">
+                <h2 class="text-2xl font-bold text-gray-800">Sous Chef Dashboard Overview</h2>
+
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Stats Cards -->
+                <div class="glass-card rounded-2xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Active Orders</p>
+                            <p class="text-2xl font-bold text-gray-800" th:text="${activeOrdersCount}">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-clipboard-check text-blue-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Low Stock Items</p>
+                            <p class="text-2xl font-bold text-yellow-600" th:text="${lowStockCount}">0</p>
+                        </div>
+                        <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-exclamation-circle text-yellow-500 text-xl"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-card rounded-2xl p-6 shadow-lg">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <p class="text-sm text-gray-600 mb-1">Quick Actions</p>
+                        </div>
+                    </div>
+                    <div class="space-y-2 mt-4">
+                        <button onclick="showContent('orders')"
+                                class="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white py-2 rounded-lg transition-colors">
+                            <i class="fas fa-eye mr-2"></i>
+                            View All Orders
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card rounded-2xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Welcome to Sous Chef Management</h3>
+                <p class="text-gray-600 mb-4">
+                    Select an option from the sidebar to manage your kitchen operations.
+                </p>
+            </div>
+        </div>
+
+        <!-- Orders Content Section (initially hidden) -->
+        <div id="orders-content" class="content-section container mx-auto px-0 sm:px-2 md:px-6 py-4 sm:py-6 md:py-8">
+            <iframe src="/seeOrders" class="w-full h-screen border-none scale-[0.85] sm:scale-100 origin-top"></iframe>
+        </div>
+
+        <!-- Ingredients Content Section (initially hidden) -->
+        <div id="ingredients-content" class="content-section container mx-auto px-0 sm:px-2 md:px-6 py-4 sm:py-6 md:py-8">
+            <iframe src="/ingredients" class="w-full h-screen border-none scale-[0.85] sm:scale-100 origin-top"></iframe>
+        </div>
+
+        <div id="recipe-content" class="content-section container mx-auto px-0 sm:px-2 md:px-6 py-4 sm:py-6 md:py-8">
+            <iframe src="/recipe-management" class="w-full h-screen border-none scale-[0.85] sm:scale-100 origin-top"></iframe>
+        </div>
+
+
+        Meals Management Content Section (initially hidden)
+        <div id="meals-content" class="content-section container mx-auto px-2 py-8">
+            <iframe src="/form" class="w-full h-screen border-none"></iframe>
+        </div>
+
+        <!-- Threshold Content Section (initially hidden) -->
+        <div id="threshold-content" class="content-section container mx-auto px-6 py-8">
+            <iframe src="/threshold" class="w-full h-screen border-none"></iframe>
+        </div>
+
+
+
+
+    </main>
+</div>
+
+<script>
+    // Function to show selected content and hide others
+    function showContent(contentId) {
+        // Hide all content sections
+        document.querySelectorAll('.content-section').forEach(section => {
+            section.classList.remove('active');
+        });
+
+        // Show selected content section
+        const targetContent = document.getElementById(contentId + '-content');
+        if (targetContent) {
+            targetContent.classList.add('active');
+        }
+
+        // Update active navigation link
+        document.querySelectorAll('.nav-link').forEach(link => {
+            if (link.getAttribute('data-target') === contentId) {
+                link.classList.add('bg-blue-400');
+            } else {
+                link.classList.remove('bg-blue-400');
+            }
+        });
+    }
+
+    // Load initial data
+    // Load initial data
+// Load initial data
+// Load initial data
+<!--document.addEventListener('DOMContentLoaded', function() {-->
+<!--    // Get active orders count-->
+<!--    fetch('/orders/count')-->
+<!--        .then(response => response.json())-->
+<!--        .then(data => {-->
+<!--            /-->
+<!--            const count = data.count || data.value || data || 0;-->
+<!--            document.getElementById('active-orders-count').textContent = count;-->
+<!--        })-->
+<!--        .catch(error => {-->
+<!--            console.error('Error fetching active orders:', error);-->
+<!--            document.getElementById('active-orders-count').textContent = '0';-->
+<!--        });-->
+
+<!--    // Get low stock items count-->
+<!--    fetch('/ingredients/low-stock/count')-->
+<!--        .then(response => response.json())-->
+<!--        .then(data => {-->
+<!--            const count = data.count || data.value || data || 0;-->
+<!--            document.getElementById('low-stock-count').textContent = count;-->
+<!--        })-->
+<!--        .catch(error => {-->
+<!--            console.error('Error fetching low stock items:', error);-->
+<!--            document.getElementById('low-stock-count').textContent = '0';-->
+<!--        });-->
+<!--});-->
+
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebarToggle');
+
+    sidebarToggle.addEventListener('click', () => {
+        const isOpen = !sidebar.classList.contains('-translate-x-full');
+        if (isOpen) {
+            sidebar.classList.add('-translate-x-full');
+        } else {
+            sidebar.classList.remove('-translate-x-full');
+        }
+    });
+
+    // Close sidebar when clicking outside
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth < 768) { // Only on mobile
+            if (!sidebar.contains(e.target) && e.target !== sidebarToggle) {
+                sidebar.classList.add('-translate-x-full');
+            }
+        }
+    });
+</script>
+</body>
+</html>

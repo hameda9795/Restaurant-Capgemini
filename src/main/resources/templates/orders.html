@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Kitchen Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/a076d05399.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #1a1c23;
+            color: #e4e6eb;
+        }
+
+        .dashboard-card {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .order-card {
+            background: #2d3748;
+            border: 1px solid #4a5568;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-new { background-color: #4299e1; }
+        .status-preparing { background-color: #ed8936; }
+        .status-ready { background-color: #48bb78; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .new-order {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-6">
+<div class="max-w-7xl mx-auto">
+    <header class="mb-10">
+        <h1 class="text-4xl font-bold text-center text-white mb-2">Kitchen Dashboard</h1>
+        <div class="w-32 h-1 bg-blue-500 mx-auto"></div>
+    </header>
+
+    <!-- Low Stock Alerts Section -->
+    <div class="mb-8">
+        <div id="lowStockAlerts" class="bg-gradient-to-r from-amber-500 to-red-500 rounded-xl p-4 shadow-lg hidden">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-white text-xl mr-3"></i>
+                    <h3 class="text-white font-semibold text-center">Raw materials are running out</h3>
+                </div>
+                <span class="text-white text-sm" id="lowStockCount"></span>
+            </div>
+            <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3" id="lowStockItems">
+                <!-- Low stock items will be inserted here dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- New Orders Column -->
+        <div class="dashboard-card rounded-xl overflow-hidden">
+            <div class="bg-blue-600 p-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-white">New Orders</h2>
+                    <div class="status-indicator status-new"></div>
+                </div>
+            </div>
+            <div id="new-orders" class="p-4 space-y-4">
+                <!-- New orders will be here -->
+            </div>
+        </div>
+
+        <!-- Preparing Orders Column -->
+        <div class="dashboard-card rounded-xl overflow-hidden">
+            <div class="bg-orange-600 p-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-white">Preparing</h2>
+                    <div class="status-indicator status-preparing"></div>
+                </div>
+            </div>
+            <div id="preparing-orders" class="p-4 space-y-4">
+                <!-- Preparing orders will be here -->
+            </div>
+        </div>
+
+        <!-- Ready Orders Column -->
+        <div class="dashboard-card rounded-xl overflow-hidden">
+            <div class="bg-green-600 p-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-xl font-semibold text-white">Ready</h2>
+                    <div class="status-indicator status-ready"></div>
+                </div>
+            </div>
+            <div id="ready-orders" class="p-4 space-y-4">
+                <!-- Ready orders will be here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    var socket = new SockJS('/ws-orders');
+    var stompClient = Stomp.over(socket);
+
+    stompClient.connect({}, function () {
+        console.log('Connected to WebSocket');
+
+        // سابسکرایب به کانال سفارش‌ها
+        stompClient.subscribe('/topic/orders', function (message) {
+            updateOrders(JSON.parse(message.body));
+        });
+
+        // سابسکرایب به کانال به‌روزرسانی موجودی
+        stompClient.subscribe('/topic/stock-updates', function(message) {
+            const update = JSON.parse(message.body);
+            if (update.type === 'LOW_STOCK_ALERT') {
+                updateLowStockAlerts();
+            }
+        });
+
+        // فراخوانی اولیه برای نمایش وضعیت موجودی
+        updateLowStockAlerts();
+    });
+
+    function formatTimeAgo(dateTime) {
+        return moment(dateTime).fromNow();
+    }
+
+    function updateOrderStatus(orderId, newStatus) {
+        fetch('/orders/update-status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `orderId=${orderId}&status=${newStatus}`
+        });
+    }
+
+    function getOrderCard(order) {
+        let statusButton = '';
+        let animationClass = order.status === 'Pending' ? 'new-order' : '';
+
+        if (order.status === 'Pending') {
+            statusButton = `
+                <button onclick="updateOrderStatus(${order.id}, 'Preparing')"
+                        class="w-full bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    Start Preparing
+                </button>`;
+        } else if (order.status === 'Preparing') {
+            statusButton = `
+                <button onclick="updateOrderStatus(${order.id}, 'Ready')"
+                        class="w-full bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors">
+                    Mark Ready
+                </button>`;
+        }
+
+        return `
+            <div class="order-card rounded-xl p-4 ${animationClass}">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center">
+                        <span class="text-xl font-bold text-white">Table ${order.tableNumber}</span>
+                        <span class="ml-3 text-sm text-gray-400">${formatTimeAgo(order.orderTime)}</span>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="bg-gray-700 rounded-lg p-3">
+                        <ul class="space-y-2">
+                            ${order.orderItems.map(item => `
+                                <li class="flex items-center text-white">
+                                    <span class="w-8 h-8 flex items-center justify-center bg-gray-600 rounded-full mr-3">
+                                        ${item.quantity}x
+                                    </span>
+                                    <span class="text-sm">${item.food.name}</span>
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+
+                    <div class="mt-4">
+                        ${statusButton}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function updateOrders(orders) {
+        orders.sort((a, b) => new Date(b.orderTime) - new Date(a.orderTime));
+
+        document.getElementById('new-orders').innerHTML = '';
+        document.getElementById('preparing-orders').innerHTML = '';
+        document.getElementById('ready-orders').innerHTML = '';
+
+        orders.forEach(order => {
+            const orderCard = getOrderCard(order);
+            if (order.status === 'Pending') {
+                document.getElementById('new-orders').insertAdjacentHTML('beforeend', orderCard);
+            } else if (order.status === 'Preparing') {
+                document.getElementById('preparing-orders').insertAdjacentHTML('beforeend', orderCard);
+            } else if (order.status === 'Ready') {
+                document.getElementById('ready-orders').insertAdjacentHTML('beforeend', orderCard);
+            }
+        });
+    }
+
+    function updateLowStockAlerts() {
+        fetch('/ingredients/low-stock')
+            .then(response => response.json())
+            .then(ingredients => {
+                const alertsContainer = document.getElementById('lowStockAlerts');
+                const itemsContainer = document.getElementById('lowStockItems');
+                const countElement = document.getElementById('lowStockCount');
+
+                if (ingredients.length > 0) {
+                    alertsContainer.classList.remove('hidden');
+                    countElement.textContent = `${ingredients.length} Items`;
+
+                    itemsContainer.innerHTML = ingredients.map(ingredient => `
+                        <div class="bg-white/10 rounded-lg p-3 backdrop-blur-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-white font-medium">${ingredient.name}</span>
+                                <span class="text-white/80 text-sm">
+                                    ${ingredient.currentStock}
+                                </span>
+                            </div>
+                            <div class="mt-2 w-full bg-white/20 rounded-full h-2">
+                                <div class="bg-white rounded-full h-2"
+                                     style="width: ${(ingredient.currentStock / ingredient.threshold * 100)}%">
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    alertsContainer.classList.add('hidden');
+                }
+            });
+    }
+
+    // Initial load of orders
+    fetch('/orders/all')
+        .then(response => response.json())
+        .then(orders => updateOrders(orders));
+</script>
+
+</body>
+</html>

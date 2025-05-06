@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Management - Molveno Restaurant</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .hover-scale {
+            transition: transform 0.2s ease;
+        }
+
+        .hover-scale:hover {
+            transform: scale(1.02);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+<div class="flex h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-gray-900 text-white">
+        <div class="p-6">
+            <div class="text-center mb-8">
+                <img th:src="@{/img/logo.svg}" alt="Logo" class="mx-auto h-12 mb-4">
+                <h1 class="text-lg font-semibold">Admin Dashboard</h1>
+            </div>
+
+            <nav class="space-y-2">
+                <a href="/admin/dashboard"
+                   class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors">
+                    <i class="fas fa-home mr-3"></i>
+                    Dashboard
+                </a>
+                <a href="/admin/staff"
+                   class="flex items-center px-4 py-3 bg-gray-800 text-white rounded-lg">
+                    <i class="fas fa-users mr-3"></i>
+                    Staff Management
+                </a>
+                <a href="/logout"
+                   class="flex items-center px-4 py-3 text-gray-300 hover:bg-gray-800 rounded-lg transition-colors mt-8">
+                    <i class="fas fa-sign-out-alt mr-3"></i>
+                    Logout
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 overflow-x-hidden overflow-y-auto bg-gray-100">
+        <div class="container mx-auto px-6 py-8">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Staff Management</h2>
+                <a href="/admin/staff/add"
+                   class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg transition-colors hover-scale inline-flex items-center">
+                    <i class="fas fa-plus mr-2"></i>
+                    Add New Staff
+                </a>
+            </div>
+
+            <!-- Alert Messages -->
+            <div th:if="${success}" class="mb-4 glass-card p-4 rounded-lg bg-green-50 border-l-4 border-green-500">
+                <div class="flex items-center">
+                    <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                    <span th:text="${success}" class="text-green-700"></span>
+                </div>
+            </div>
+
+            <div th:if="${error}" class="mb-4 glass-card p-4 rounded-lg bg-red-50 border-l-4 border-red-500">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-circle text-red-500 mr-3"></i>
+                    <span th:text="${error}" class="text-red-700"></span>
+                </div>
+            </div>
+
+            <!-- Staff Table -->
+            <div class="glass-card rounded-2xl shadow-lg overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Staff Member
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Role
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Last Login
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tr th:each="user : ${users}" th:unless="${user.role == T(com.example.Restaurant.model.Role).ADMIN}"
+                            class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10">
+                                        <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                            <i class="fas fa-user text-gray-500"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900"
+                                             th:text="${user.firstName + ' ' + user.lastName}">Name</div>
+                                        <div class="text-sm text-gray-500" th:text="${user.username}">Username</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                              th:classappend="${
+                                                user.role == T(com.example.Restaurant.model.Role).CHEF ? 'bg-purple-100 text-purple-800' :
+                                                user.role == T(com.example.Restaurant.model.Role).WAITER ? 'bg-blue-100 text-blue-800' :
+                                                'bg-yellow-100 text-yellow-800'
+                                              }"
+                                              th:text="${user.role}">
+                                            Role
+                                        </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                                              th:classappend="${user.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}"
+                                              th:text="${user.isActive ? 'Active' : 'Inactive'}">
+                                            Status
+                                        </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500"
+                                th:text="${#temporals.format(user.lastLogin, 'dd MMM yyyy HH:mm')}">
+                                Last Login
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <div class="flex items-center justify-end space-x-3">
+                                    <a th:href="@{/admin/staff/edit/{id}(id=${user.id})}"
+                                       class="text-blue-600 hover:text-blue-900 hover-scale">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form th:action="@{/admin/staff/toggle/{id}(id=${user.id})}"
+                                          method="post"
+                                          class="inline">
+                                        <button type="submit"
+                                                th:class="${user.isActive ? 'text-red-600 hover:text-red-900' : 'text-green-600 hover:text-green-900'}"
+                                                class="hover-scale">
+                                            <i th:class="${user.isActive ? 'fas fa-user-times' : 'fas fa-user-check'}"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

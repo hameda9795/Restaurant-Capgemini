@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<!--
+    Purpose: This is the menu page for the Molveno Lake Resort Restaurant application.
+    Features: Displays a list of food items, allows users to add items to the cart, and view the cart.
+    Dependencies:
+    - Tailwind CSS for styling
+    - Font Awesome for icons
+    - Thymeleaf for server-side rendering and dynamic content
+    Template Parameters:
+    - foods: List of food items to display
+    - category: The category of the menu (e.g., Breakfast, Lunch, Dinner)
+-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molveno Lake Resort Restaurant</title>
+
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <!-- Custom Tailwind configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend:
+                    colors: {
+                        'custom-blue': '#002060',
+                    },
+                    fontFamily: {
+                        'brush': ['Brush Script MT', 'cursive']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+<!-- Header: Contains the logo, navigation links, and cart icon -->
+<header class="max-w-7xl mx-auto bg-gray-100 dark:bg-gray-500 shadow-md z-50 border-black">
+    <div class="w-full max-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex max-w-7xl justify-between items-center h-16 sm:h-20">
+            <!-- Logo -->
+            <img th:src="@{/img/logo.svg}" alt="" class="h-16 w-auto">
+
+            <!-- Middle Side: Contains the site title and navigation links -->
+            <div class="md:flex flex-col items-center flex-grow">
+                <h1 class="font-brush text-2xl md:text-4xl lg:text-4xl text-custom-blue text-center whitespace-nowrap">
+                    Molveno Lake Resort Restaurant
+                </h1>
+                <nav class="space-x-8 hidden md:block">
+                    <a th:href="@{/}" class="text-gray-600 hover:text-blue-500">Home</a>
+                    <a href="#" class="text-gray-600 hover:text-blue-500">About</a>
+                    <a href="#" class="text-gray-600 hover:text-blue-500">Gallery</a>
+                </nav>
+            </div>
+
+            <!-- Right Side Items: Contains the cart icon and mobile menu toggle -->
+            <div class="flex items-center space-x-4">
+                <!-- Shopping Cart Icon -->
+                <a href="/cart" class="relative p-2">
+                    <i class="fas fa-shopping-cart text-xl text-gray-700"></i>
+                    <span id="cartCounter"
+                          class="absolute -top-1 -right-1 bg-red-500 text-white text-xs
+                                                 rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                </a>
+
+                <!-- Mobile Menu Button -->
+                <button id="menu-toggle" class="hidden text-gray-700">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content: Displays the menu items -->
+<main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-1 pb-12">
+    <!-- Banner Container: Displays the category title -->
+    <div class="flex flex-col items-center justify-center p-8">
+        <h2 th:text="${#strings.capitalize(#vars.category)}"
+            class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-[#002060] tracking-[0.15em]
+                               text-center my-2 uppercase border-2 border-[#002060] rounded-lg p-2 bg-white"
+            style="
+                           text-shadow:
+                            -1px -1px 0 #2563eb,
+                             1px -1px 0 #2563eb,
+                            -1px  1px 0 #2563eb,
+                             1px  1px 0 #2563eb;
+                        ">
+        </h2>
+    </div>
+
+    <!-- Grid Container: Displays the food items in a grid layout -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+        <!-- Menu Item Card: Displays each food item -->
+        <div th:each="food : ${foods}"
+             class="bg-white p-3 rounded-xl shadow-lg hover:shadow-xl transition-shadow flex flex-col h-full">
+
+            <!-- Food Image -->
+            <div class="h-48 w-full overflow-hidden rounded-lg">
+                <img th:src="@{/uploads/{filename}(filename=${food.image})}"
+                     th:alt="${food.name}"
+                     class="w-full h-full object-cover">
+            </div>
+
+            <!-- Food Details -->
+            <div class="p-4 flex flex-col flex-grow">
+                <h3 th:text="${food.name}" class="text-xl font-semibold text-gray-800"></h3>
+                <p th:text="${food.description}" class="mt-2 text-gray-600 text-sm mb-4"></p>
+
+                <!-- Price and Add to Cart Section -->
+                <div class="mt-auto flex justify-between items-center">
+    <span th:text="'¥ ' + ${#numbers.formatDecimal(food.price, 1, 2)}"
+          class="text-lg font-bold text-blue-600"></span>
+
+                    <!-- نمایش دکمه‌های Add برای صبحانه و گارسون‌ها -->
+                    <div th:if="${#strings.equals(#vars.category, 'breakfast')} or ${#authorization.expression('hasRole(''WAITER'')')}"
+                         class="flex items-center space-x-2">
+                        <div class="grid grid-cols-3 border rounded-lg overflow-hidden w-24 sm:w-32 h-9">
+                            <button onclick="decreaseCount(this)"
+                                    class="flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-minus text-sm"></i>
+                            </button>
+                            <input type="number"
+                                   th:attr="data-food-id=${food.id}"
+                                   value="0"
+                                   min="0"
+                                   class="text-center border-x focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                   readonly>
+                            <button onclick="increaseCount(this)"
+                                    class="flex items-center justify-center bg-gray-100 hover:bg-gray-200 transition-colors">
+                                <i class="fas fa-plus text-sm"></i>
+                            </button>
+                        </div>
+                        <button onclick="addToCart(this)"
+                                class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-1.5 rounded-lg transition-colors flex items-center">
+                            <i class="fas fa-cart-plus mr-2"></i>
+                            Add
+                        </button>
+                    </div>
+
+                    <!-- نمایش "For service 👨‍🍳" برای ناهار و شام (فقط برای کاربران غیر گارسون) -->
+                    <div th:if="${(#strings.equals(#vars.category, 'lunch') or #strings.equals(#vars.category, 'dinner')) and !#authorization.expression('hasRole(''WAITER'')')}"
+                         class="bg-gradient-to-r from-blue-50 to-indigo-50 text-indigo-600 px-4 py-2 rounded-lg border border-indigo-100 font-medium">
+                        For service 👨‍🍳
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Mobile Menu: Contains navigation links -->
+<div id="mobile-menu"
+     class="fixed inset-0 bg-white transform translate-x-full transition-transform duration-300 z-50">
+    <div class="p-4">
+        <button id="menu-close" class="absolute top-4 right-4">
+            <i class="fas fa-times text-2xl"></i>
+        </button>
+
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold mb-4">Menu</h2>
+            <nav class="space-y-4">
+                <a href="/" class="block text-gray-600 hover:text-blue-500">Home</a>
+                <a href="#" class="block text-gray-600 hover:text-blue-500">About</a>
+                <a href="#" class="block text-gray-600 hover:text-blue-500">Gallery</a>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification: Displays a success message when an item is added to the cart -->
+<div id="toast"
+     class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg
+                        transform translate-y-full opacity-0 transition-all duration-300">
+    Item added to cart successfully!
+</div>
+
+<script>
+    // Mobile Menu Toggle
+    const menuToggle = document.getElementById('menu-toggle');
+    const menuClose = document.getElementById('menu-close');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.remove('translate-x-full');
+    });
+
+    menuClose.addEventListener('click', () => {
+        mobileMenu.classList.add('translate-x-full');
+    });
+
+    /**
+     * Increases the quantity of the food item.
+     * @param {HTMLElement} button - The button element that was clicked.
+     */
+    function increaseCount(button) {
+        const input = button.parentElement.querySelector('input');
+        input.value = parseInt(input.value) + 1;
+    }
+
+    /**
+     * Decreases the quantity of the food item.
+     * @param {HTMLElement} button - The button element that was clicked.
+     */
+    function decreaseCount(button) {
+        const input = button.parentElement.querySelector('input');
+        if (parseInt(input.value) > 0) {
+            input.value = parseInt(input.value) - 1;
+        }
+    }
+
+    function notifyWaiter() {
+// ایجاد مودال برای دریافت شماره میز
+const modal = document.createElement('div');
+modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+modal.innerHTML = `
+<div class="bg-white rounded-lg p-6 w-96 shadow-xl">
+<h3 class="text-lg font-semibold mb-4">Please Enter Your Table Number</h3>
+<input type="number" id="tableNumber" min="1" max="25"
+       class="w-full px-4 py-2 border rounded-lg mb-4"
+       placeholder="Enter table number (1-25)">
+<div class="flex justify-end space-x-3">
+    <button onclick="this.closest('.fixed').remove()"
+            class="px-4 py-2 text-gray-500 hover:text-gray-700">
+        Cancel
+    </button>
+    <button onclick="sendWaiterNotification()"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+        Call Waiter
+    </button>
+</div>
+</div>
+`;
+document.body.appendChild(modal);
+}
+
+function sendWaiterNotification() {
+const tableNumber = document.getElementById('tableNumber').value;
+if (!tableNumber || tableNumber < 1 || tableNumber > 25) {
+alert('Please enter a valid table number between 1 and 25');
+return;
+}
+
+// ارسال به وب‌سوکت
+if (stompClient) {
+stompClient.send("/app/waiter-call", {}, JSON.stringify({
+tableNumber: tableNumber,
+category: getCurrentCategory(), // lunch یا dinner
+timestamp: new Date()
+}));
+}
+
+// حذف مودال
+document.querySelector('.fixed').remove();
+
+// نمایش پیام موفقیت
+const toast = document.createElement('div');
+toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300';
+toast.innerHTML = `
+<div class="flex items-center">
+<i class="fas fa-check-circle mr-2"></i>
+<span>Waiter has been notified. They will be with you shortly!</span>
+</div>
+`;
+document.body.appendChild(toast);
+
+setTimeout(() => {
+toast.style.opacity = '0';
+setTimeout(() => toast.remove(), 300);
+}, 3000);
+}
+
+    /**
+     * Adds the selected food item to the cart.
+     * @param {HTMLElement} button - The button element that was clicked.
+     */
+    function addToCart(button) {
+        const container = button.closest('.p-4');
+        const input = container.querySelector('input[type="number"]');
+        const foodId = input.getAttribute('data-food-id');
+        const quantity = parseInt(input.value);
+
+        if (quantity > 0) {
+            fetch('/cart/add', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `foodId=${foodId}&quantity=${quantity}`
+            })
+            .then(response => response.text())
+            .then(result => {
+                showToast();
+                updateCartCounter();
+                input.value = 0;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    }
+
+    /**
+     * Updates the cart counter displayed on the cart icon.
+     */
+    function updateCartCounter() {
+        fetch('/cart/count')
+            .then(response => response.text())
+            .then(count => {
+                document.getElementById('cartCounter').textContent = count;
+            });
+    }
+
+    /**
+     * Displays a toast notification.
+     */
+    function showToast() {
+        const toast = document.getElementById('toast');
+        toast.classList.remove('translate-y-full', 'opacity-0');
+
+        setTimeout(() => {
+            toast.classList.add('translate-y-full', 'opacity-0');
+        }, 3000);
+    }
+
+    // Initialize Cart Counter
+    document.addEventListener('DOMContentLoaded', () => {
+        const storedCount = sessionStorage.getItem('cartCount');
+        if (storedCount) {
+            document.getElementById('cartCounter').textContent = storedCount;
+            sessionStorage.removeItem('cartCount');
+        } else {
+            updateCartCounter();
+        }
+    });
+
+
+function notifyWaiter() {
+const modal = document.createElement('div');
+modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+modal.innerHTML = `
+<div class="bg-white rounded-lg p-6 w-96 shadow-xl">
+<h3 class="text-lg font-semibold mb-4">Please Enter Your Table Number</h3>
+<input type="number" id="tableNumber" min="1" max="25"
+       class="w-full px-4 py-2 border rounded-lg mb-4"
+       placeholder="Enter table number (1-25)">
+<div class="flex justify-end space-x-3">
+    <button onclick="closeModal(this)"
+            class="px-4 py-2 text-gray-500 hover:text-gray-700">
+        Cancel
+    </button>
+    <button onclick="confirmTableNumber()"
+            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+        Call Waiter
+    </button>
+</div>
+</div>
+`;
+document.body.appendChild(modal);
+}
+
+function closeModal(button) {
+button.closest('.fixed').remove();
+}
+
+function confirmTableNumber() {
+const tableNumber = document.getElementById('tableNumber').value;
+if (!tableNumber || tableNumber < 1 || tableNumber > 25) {
+alert('Please enter a valid table number between 1 and 25');
+return;
+}
+
+// حذف مودال
+closeModal(document.querySelector('.fixed button'));
+
+// نمایش پیام موفقیت
+showSuccessMessage();
+}
+
+function showSuccessMessage() {
+const toast = document.createElement('div');
+toast.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300';
+toast.innerHTML = `
+<div class="flex items-center">
+<i class="fas fa-check-circle mr-2"></i>
+<span>Waiter has been notified. They will be with you shortly!</span>
+</div>
+`;
+document.body.appendChild(toast);
+
+// حذف پیام بعد از 3 ثانیه
+setTimeout(() => {
+toast.style.opacity = '0';
+setTimeout(() => toast.remove(), 300);
+}, 3000);
+}
+
+</script>
+</body>
+</html>

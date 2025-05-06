@@ -1,0 +1,132 @@
+<!-- The root element of the POM file -->
+	<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	    <!-- The model version for the POM file -->
+	    <modelVersion>4.0.0</modelVersion>
+
+	    <!-- Parent project information -->
+	    <parent>
+	        <!-- Group ID of the parent project -->
+	        <groupId>org.springframework.boot</groupId>
+	        <!-- Artifact ID of the parent project -->
+	        <artifactId>spring-boot-starter-parent</artifactId>
+	        <!-- Version of the parent project -->
+	        <version>3.2.2</version>
+	        <!-- Relative path to the parent project (optional) -->
+	        <relativePath/>
+	    </parent>
+
+	    <!-- Group ID for this project -->
+	    <groupId>com.example</groupId>
+	    <!-- Artifact ID for this project -->
+	    <artifactId>Restaurant</artifactId>
+	    <!-- Version of this project -->
+	    <version>0.0.1-SNAPSHOT</version>
+	    <!-- Name of the project -->
+	    <name>Restaurant</name>
+	    <!-- Description of the project -->
+	    <description>Restaurant Management System</description>
+
+	    <!-- Properties for the project -->
+	    <properties>
+	        <!-- Java version to use for the project -->
+	        <java.version>17</java.version>
+	    </properties>
+
+	    <!-- Dependencies for the project -->
+	    <dependencies>
+	        <!-- Spring Boot Starter for building web applications -->
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-web</artifactId>
+	        </dependency>
+	        <!-- Spring Boot Starter for Thymeleaf template engine -->
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+	        </dependency>
+	        <!-- Spring Boot Starter for JPA (Java Persistence API) -->
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-data-jpa</artifactId>
+	        </dependency>
+	        <!-- Spring Boot Starter for security features -->
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-security</artifactId>
+	        </dependency>
+	        <!-- Spring Boot Starter for validation features -->
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-validation</artifactId>
+	        </dependency>
+	        <!-- Spring Boot Starter for WebSocket support -->
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-websocket</artifactId>
+	        </dependency>
+	        <!-- Thymeleaf extras for Spring Security integration -->
+	        <dependency>
+	            <groupId>org.thymeleaf.extras</groupId>
+	            <artifactId>thymeleaf-extras-springsecurity6</artifactId>
+	        </dependency>
+	        <!-- H2 Database dependency for runtime -->
+	        <dependency>
+	            <groupId>com.h2database</groupId>
+	            <artifactId>h2</artifactId>
+	            <scope>runtime</scope>
+	        </dependency>
+	        <!-- Spring Boot DevTools for development features -->
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-devtools</artifactId>
+	            <scope>runtime</scope>
+	            <optional>true</optional>
+	        </dependency>
+	        <!-- Lombok for reducing boilerplate code -->
+	        <dependency>
+	            <groupId>org.projectlombok</groupId>
+	            <artifactId>lombok</artifactId>
+	            <optional>true</optional>
+	        </dependency>
+	        <!-- Spring Boot Starter for testing features -->
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-test</artifactId>
+	            <scope>test</scope>
+	        </dependency>
+	        <!-- Spring Security test dependency -->
+	        <dependency>
+	            <groupId>org.springframework.security</groupId>
+	            <artifactId>spring-security-test</artifactId>
+	            <scope>test</scope>
+	        </dependency>
+			<dependency>
+				<groupId>org.springframework.security</groupId>
+				<artifactId>spring-security-crypto</artifactId>
+				<version>5.8.1</version>
+			</dependency>
+
+		</dependencies>
+
+	    <!-- Build configuration for the project -->
+	    <build>
+	        <!-- Plugins for the build process -->
+	        <plugins>
+	            <!-- Spring Boot Maven Plugin for packaging the application -->
+	            <plugin>
+	                <groupId>org.springframework.boot</groupId>
+	                <artifactId>spring-boot-maven-plugin</artifactId>
+	                <configuration>
+	                    <!-- Exclude Lombok from the final build -->
+	                    <excludes>
+	                        <exclude>
+	                            <groupId>org.projectlombok</groupId>
+	                            <artifactId>lombok</artifactId>
+	                        </exclude>
+	                    </excludes>
+	                </configuration>
+	            </plugin>
+	        </plugins>
+	    </build>
+	</project>

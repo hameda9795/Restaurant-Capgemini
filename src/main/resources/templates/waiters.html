@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Waiters Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <audio id="notificationSound" src="/sounds/notification.mp3" preload="auto"></audio>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: #1a1c23;
+            color: #e4e6eb;
+        }
+
+        .order-card {
+            backgund: #2d3748;
+            border: 1px solid #4a5568;
+            transition: all 0.3s ease;ro
+        }
+
+        .order-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .new-order {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+        }
+
+        .fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        .ready-badge {
+            background: linear-gradient(45deg, #48bb78, #38a169);
+            border: 2px solid #2f855a;
+            box-shadow: 0 2px 4px rgba(72, 187, 120, 0.2);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-6">
+<div class="max-w-7xl mx-auto">
+    <header class="mb-10">
+        <h1 class="text-4xl font-bold text-center text-white mb-2">Ready Orders</h1>
+        <div class="w-32 h-1 bg-green-500 mx-auto"></div>
+    </header>
+
+    <div id="ready-orders" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Ready orders will be inserted here -->
+    </div>
+</div>
+
+<script th:inline="javascript">
+    var socket = new SockJS('/ws-orders');
+    var stompClient = Stomp.over(socket);
+    var notificationSound = document.getElementById('notificationSound');
+    var previousOrders = new Set();
+
+    stompClient.connect({}, function() {
+        console.log('Connected to WebSocket');
+        stompClient.subscribe('/topic/orders', function(message) {
+            updateOrders(JSON.parse(message.body));
+        });
+    });
+
+    function updateOrders(orders) {
+        const readyOrders = orders.filter(order => order.status === 'Ready');
+        const readyOrdersContainer = document.getElementById('ready-orders');
+        const currentOrders = new Set(readyOrders.map(order => order.id));
+
+        readyOrders.forEach(order => {
+            if (!previousOrders.has(order.id)) {
+                playNotification();
+            }
+        });
+
+        previousOrders = currentOrders;
+
+        readyOrdersContainer.innerHTML = readyOrders.map(order => `
+            <div class="order-card rounded-xl p-6 new-order" data-order-id="${order.id}">
+                <div class="flex items-center justify-between mb-6">
+                    <div class="flex items-center space-x-3">
+                        <span class="text-2xl font-bold text-white">Table ${order.tableNumber}</span>
+                        <span class="ready-badge px-3 py-1 rounded-full text-sm text-white">
+                            Ready
+                        </span>
+                    </div>
+                </div>
+
+                <div class="bg-gray-700 rounded-lg p-4 mb-6">
+                    <ul class="space-y-3">
+                        ${order.orderItems.map(item => `
+                            <li class="flex items-center text-white">
+                                <span class="w-8 h-8 flex items-center justify-center bg-gray-600 rounded-full mr-3">
+                                    ${item.quantity}x
+                                </span>
+                                <span class="text-sm">${item.food.name}</span>
+                            </li>
+                        `).join('')}
+                    </ul>
+                </div>
+
+                <button onclick="markAsDelivered(${order.id})"
+                        class="w-full bg-green-500 hover:bg-green-600 text-white py-3 px-4 rounded-lg
+                               transition-colors flex items-center justify-center space-x-2">
+                    <span>Mark as Delivered</span>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function markAsDelivered(orderId) {
+        const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+        if (orderCard) {
+            orderCard.classList.add('fade-out');
+            setTimeout(() => {
+                fetch('/orders/update-status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `orderId=${orderId}&status=Delivered`
+                }).then(() => {
+                    orderCard.remove();
+                    checkEmptyState();
+                });
+            }, 300);
+        }
+    }
+
+    function checkEmptyState() {
+        const container = document.getElementById('ready-orders');
+        if (container.children.length === 0) {
+            container.innerHTML = `
+                <div class="col-span-full text-center py-20">
+                    <div class="text-gray-400 text-lg">No orders ready for delivery</div>
+                </div>
+            `;
+        }
+    }
+
+    function playNotification() {
+        notificationSound.play().catch(error => {
+            console.log('Error playing sound:', error);
+        });
+    }
+
+    // Initial load of orders
+    fetch('/orders/all')
+        .then(response => response.json())
+        .then(orders => {
+            updateOrders(orders);
+            checkEmptyState();
+        });
+</script>
+</body>
+</html>
